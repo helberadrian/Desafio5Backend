@@ -1,15 +1,18 @@
 const express = require("express");
 const app = express();
 const productos = require("./routes/app");
-const PORT = 8080;
-
-// middlewares
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+const morgan = require("morgan");
+const PORT = 3000;
 
 // settings
 app.set("json spaces", 2);
-app.use("/static", express.static(__dirname, "./public"));
+app.use(require("./routes/app"));
+
+// middlewares
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use(express.static(__dirname, + "./public"));
 app.use("/api", productos);
 
 // starting the server
