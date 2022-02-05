@@ -1,5 +1,5 @@
 const archivo = require("../data/datos.json");
-
+const fs = require("fs");
 const {Router} = require("express");
 const router = Router();
 
@@ -37,18 +37,26 @@ router.post("/productos", (req, res) => {
 router.put("/productos/:id", (req, res) =>{
     const id = parseInt(req.params.id);
     const productoNuevo = req.body;
-    
-    const producto = archivo.find(producto => producto.id == id);
+    const resultado = [];
+
+    const datos = fs.readFileSync("../data/datos.json");
+    const productos = JSON.parse(datos);
+
+    const producto = productos.find(producto => producto.id == id);
     if (producto == undefined){
         res.send({error: "producto no encontrado"});
     } else{
-        Object.defineProperty(archivo.find(producto => producto.id == id), {
-            "producto": {value: productoNuevo.producto},
-            "precio": {value: productoNuevo.precio},
-            "cantidad": {value: productoNuevo.cantidad}
-        })
+        for (const indice of productos) {
+            if (indice.id != id){
+                resultado.push(indice);
+            }
+        }
+        const productoFinal = Object.assign(productoNuevo, id);
+        productos.push(productoFinal);
+
+        fs.writeFileSync("../data/datos.json", JSON.stringify(productos));
     }
-    console.log(archivo);
+    console.log(productos);
     res.send(`Se modifico el producto con el ID ${id}: ${JSON.stringify(productoNuevo)}`);
 });
 
