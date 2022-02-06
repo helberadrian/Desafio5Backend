@@ -35,29 +35,31 @@ router.post("/productos", (req, res) => {
 
 // PUT
 router.put("/productos/:id", (req, res) =>{
-    const id = parseInt(req.params.id);
-    const productoNuevo = req.body;
-    const resultado = [];
+    fs.promises.readFile("../data/datos.json", "utf-8")
+    .then(contenido =>{
+        const id = parseInt(req.params.id); // Tomo información de DOM y navegador
+        const productoNuevo = req.body;
+        const resultado = [];
 
-    const datos = fs.readFileSync("../data/datos.json");
-    const productos = JSON.parse(datos);
+        const productos = JSON.parse(contenido); // Descargo el contenido del JSON
 
-    const producto = productos.find(producto => producto.id == id);
-    if (producto == undefined){
-        res.send({error: "producto no encontrado"});
-    } else{
-        for (const indice of productos) {
+        for (const indice of productos) { // Elimino el producto existente creando un nuevo array sin el
             if (indice.id != id){
                 resultado.push(indice);
             }
         }
-        const productoFinal = Object.assign(productoNuevo, id);
-        productos.push(productoFinal);
 
-        fs.writeFileSync("../data/datos.json", JSON.stringify(productos));
-    }
-    console.log(productos);
-    res.send(`Se modifico el producto con el ID ${id}: ${JSON.stringify(productoNuevo)}`);
+        const productoFinal = Object.assign(productoNuevo, id); // Asigno el id al producto nuevo
+        resultado.push(productoFinal); // Agrego el producto al array que se va a escribir
+
+        fs.writeFileSync("../data/datos.json", JSON.stringify(resultado));
+
+        console.log(productos);
+        res.send(`Se modifico el producto con el ID ${id}: ${JSON.stringify(productoNuevo)}`);
+    })
+    .catch( error => {
+        console.log("Error en la lectura", error);
+    })
 });
 
 // DELETE
