@@ -28,15 +28,6 @@
         <button type="submit">Enviar</button>
     </form>
 
-    <!-- Tabla de lista de productos -->
-    <div id="productos-lista" style="display: none">
-        {{#each products}}
-        <div>
-          <strong>{{this.producto}}:</strong>
-          <em>{{ this.precio }}</em>
-          <strong>{{this.cantidad}}:</strong>
-        </div>
-        {{/each}}
-      </div>
+    <script src="../server.js"></script>
 </body>
 </html>

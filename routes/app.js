@@ -1,4 +1,4 @@
-const archivo = require("../data/datos.json");
+//const archivo = require("../data/datos.json");
 const fs = require("fs");
 const {Router} = require("express");
 const router = Router();
@@ -10,27 +10,52 @@ router.get("/", (req, res) => {
     });
 });
 
+// GET
 router.get("/productos", (req, res) => {
-    res.json(archivo);
+    fs.promises.readFile("../data/datos.json", "utf-8")
+    .then(contenido => {
+        const data = JSON.parse(contenido);
+        res.json(data);
+    })
+    .catch( error => {
+        console.log("Error en la lectura", error);
+    });
 });
 
 // GET
 router.get("/productos/:id", (req, res) =>{
-    const id = parseInt(req.params.id);
+    fs.promises.readFile("../data/datos.json", "utf-8")
+    .then(contenido => {
+        const id = parseInt(req.params.id);
+        const data = JSON.parse(contenido);
 
-    const producto = archivo.find(producto => producto.id == id);
-    res.json(producto);
+        const producto = data.find(producto => producto.id == id);
+        res.json(producto);
+    })
+    .catch( error => {
+        console.log("Error en la lectura", error);
+    });
 });
-
+    
 // POST
 router.post("/productos", (req, res) => {
-    const producto = req.body;
-    let num = archivo.length + 1;
-    const id = { id: num}
-    const productoFinal = Object.assign(producto, id);
-    
-    archivo.push(productoFinal);
-    res.send(`Se guardo el producto ${JSON.stringify(productoFinal)}`);
+    fs.promises.readFile("../data/datos.json", "utf-8")
+    .then(contenido => {
+        const data = JSON.parse(contenido);
+        const productoNuevo = req.body;
+        let num = data.length + 1;
+        const id = {id: num}
+        const producto = Object.assign(productoNuevo, id);
+
+        data.push(producto);
+        const final = JSON.stringify(data);
+        fs.writeFileSync("../data/datos.json", final);
+
+        res.send(`Se guardo el producto ${JSON.stringify(producto)}`);
+    })
+    .catch( error => {
+        console.log("Error en la lectura", error);
+    });
 });
 
 // PUT
@@ -49,13 +74,13 @@ router.put("/productos/:id", (req, res) =>{
             }
         }
 
-        const productoFinal = Object.assign(productoNuevo, id); // Asigno el id al producto nuevo
+        const productoFinal = Object.assign(productoNuevo, {id: id}); // Asigno el id al producto nuevo
         resultado.push(productoFinal); // Agrego el producto al array que se va a escribir
 
-        fs.writeFileSync("../data/datos.json", JSON.stringify(resultado));
+        fs.writeFileSync("../data/datos.json", JSON.stringify(resultado)); // Se guardan los datos en el archivo
 
         console.log(productos);
-        res.send(`Se modifico el producto con el ID ${id}: ${JSON.stringify(productoNuevo)}`);
+        res.send(`Se modifico el producto con el ID ${id}: ${JSON.stringify(productoFinal)}`);
     })
     .catch( error => {
         console.log("Error en la lectura", error);
@@ -64,16 +89,27 @@ router.put("/productos/:id", (req, res) =>{
 
 // DELETE
 router.delete("/productos/:id", (req, res) =>{
-    const id = parseInt(req.params.id);
+    fs.promises.readFile("../data/datos.json", "utf-8")
+    .then(contenido => {
+        const data = JSON.parse(contenido);
+        const id = parseInt(req.params.id);
+        const resultado = [];
 
-    const producto = archivo.find(producto => producto.id == id);
-    if (producto == undefined){
-        res.send({error: "producto no encontrado"});
-    } else{
-        archivo.filter(eliminado => eliminado.id !== id);
-    }
-    console.log(archivo);
-    res.send(`Se borro el archivo con el ID ${id}: ${JSON.stringify(archivo)}`);
+        const productos = JSON.parse(contenido);
+
+        for (const indice of productos) {
+            if (indice.id != id){
+                resultado.push(indice);
+            }
+        }
+
+        fs.writeFileSync("../data/datos.json", JSON.stringify(resultado));
+
+        res.send(`Se elimino el producto ${id} con exito`);
+    })
+    .catch( error => {
+        console.log("Error en la lectura", error);
+    });
 });
 
 module.exports = router;
