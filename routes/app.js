@@ -1,8 +1,6 @@
 const fs = require("fs");
 const {Router} = require("express");
 const router = Router();
-const ListaProductos = require("../class/class");
-const producto = new ListaProductos();
 let file = "./data/datos.json";
 
 // GET RAIZ
